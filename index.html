@@ -242,7 +242,6 @@ ul.checks li small{display:block;font-size:.92cqw;color:var(--w55);margin-top:.1
     </div>
     <div class="foot">
       <span>B&amp;T Project a.s. — návrh nasazení pro pořadatele</span>
-      <span>Snímky z běžící aplikace</span>
     </div>
   </div>
 </section>
@@ -252,30 +251,29 @@ ul.checks li small{display:block;font-size:.92cqw;color:var(--w55);margin-top:.1
   <div class="pad">
     <div class="slide-no">02</div>
     <div class="eyebrow">Vstup do akce</div>
-    <h2>Naskenuje QR.<br>A je uvnitř.</h2>
-    <div class="body" style="align-items:center;margin-bottom:2.4cqw">
-      <div style="flex:0 0 auto;display:flex;align-items:center;gap:1.8cqw;align-self:stretch">
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
-          <div class="qr-block" style="width:13cqw">
-            <i></i><i></i><i></i><i></i>
-            <img src="assets/qr-foto-zive.png" alt="QR kód na galerii" loading="lazy" width="720" height="720">
-          </div>
-          <p style="font-size:.8cqw;color:var(--w38);margin-top:.9cqw">QR u prezence</p>
-        </div>
-        <div class="sipka">→</div>
-        <div style="position:relative;display:flex;align-items:center;align-self:stretch">
-          <div class="phone" style="height:88%;width:auto">
-            <img src="snimky/galerie--mobil.webp" alt="Živá galerie konference" loading="lazy" width="390" height="844">
-          </div>
-        </div>
-      </div>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+    <h2 class="sm">Host naskenuje QR<br>a je uvnitř živé galerie</h2>
+    <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr auto 1fr;
+      align-items:center;gap:3cqw;margin:2.2cqw 0 2.4cqw">
+      <div style="display:flex;flex-direction:column;justify-content:center">
         <ul class="checks">
           <li><div>Bez instalace — běží v prohlížeči telefonu<small>Nic se nestahuje z obchodu s aplikacemi. iPhone i Android.</small></div></li>
           <li><div>Bez registrace a bez hesla<small>Prohlížení ani stahování účet nevyžadují.</small></div></li>
           <li><div>Mezi kódem a fotkami není ani jedna obrazovka<small>Odkaz z QR vyřídí server a rovnou přesměruje do galerie vaší konference.</small></div></li>
           <li><div>Kdo QR nemá, zadá kód konference<small>Na foto-zive.cz stačí kód z programu nebo ze stolku.</small></div></li>
         </ul>
+      </div>
+      <div style="text-align:center">
+        <div class="qr-block" style="width:15cqw">
+          <i></i><i></i><i></i><i></i>
+          <img src="assets/qr-foto-zive.png" alt="QR kód na galerii" loading="lazy" width="720" height="720">
+        </div>
+        <p style="font-size:.8cqw;color:var(--w38);margin-top:.9cqw">QR u prezence</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:1.8cqw;align-self:stretch;min-height:0">
+        <div class="sipka">→</div>
+        <div class="phone" style="height:96%;width:auto">
+          <img src="snimky/galerie--mobil.webp" alt="Živá galerie konference" loading="lazy" width="390" height="844">
+        </div>
       </div>
     </div>
     <div class="foot">
@@ -526,12 +524,6 @@ ul.checks li small{display:block;font-size:.92cqw;color:var(--w55);margin-top:.1
         <span class="badge" style="margin-top:1.4cqw"><span class="dot"></span>Živě</span>
         <p class="lede" style="max-width:38cqw">Zkušební galerie běží ve vašem telefonu — projdete si
           přesně to, co na konferenci uvidí host: od naskenování QR po uloženou fotku.</p>
-        <div class="rule" style="max-width:38cqw"></div>
-        <p style="font-size:1cqw;color:var(--w55);line-height:1.6;max-width:38cqw">
-          K rozhodnutí:<br>
-          <b style="color:var(--w90)">nasazení na oba dny</b> ·
-          <b style="color:var(--w90)">umístění QR kódů</b> ·
-          <b style="color:var(--w90)">zkouška v sále</b></p>
       </div>
       <div style="flex:0 0 auto;text-align:center">
         <div class="qr-block">
@@ -550,7 +542,7 @@ ul.checks li small{display:block;font-size:.92cqw;color:var(--w55);margin-top:.1
         <div style="font-size:.72cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
           color:var(--w38)">Návrh a zpracování</div>
         <p style="font-family:var(--display);font-weight:800;font-size:1.5cqw;text-transform:uppercase;
-          letter-spacing:.02em;color:var(--w70);margin-top:.35cqw">Ondřej</p>
+          letter-spacing:.02em;color:var(--w70);margin-top:.35cqw">Ondřej Cedidla</p>
       </div>
     </div>
   </div>
