@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<!-- Pevná šířka místo device-width: mobil vykreslí stránku stejně jako desktop
+     a celou ji zmenší. Uživatel si pak přiblíží prsty. Bez maximum-scale,
+     aby zoom zůstal povolený. -->
+<meta name="viewport" content="width=1600">
+<meta name="robots" content="noindex, nofollow">
+<title>Foto-Živě — aplikace pro konferenci</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@700;800;900&display=swap');
+
+:root{
+  --black:#0C0C0C; --ink900:#141414; --ink800:#1C1C1C; --ink700:#262626; --ink600:#333;
+  --green:#00E76A; --green-bright:#2CF584; --green-deep:#00B453;
+  --green-12:rgba(0,231,106,.12); --green-20:rgba(0,231,106,.20);
+  --w90:rgba(255,255,255,.90); --w70:rgba(255,255,255,.70); --w55:rgba(255,255,255,.55);
+  --w38:rgba(255,255,255,.38); --w16:rgba(255,255,255,.16); --w10:rgba(255,255,255,.10);
+  --w06:rgba(255,255,255,.06);
+  --amber:#F5A623;
+  --display:'Barlow Condensed','Barlow',system-ui,-apple-system,'Helvetica Neue',sans-serif;
+  --text:'Barlow',system-ui,-apple-system,'Helvetica Neue',sans-serif;
+  --glow:0 6px 34px rgba(0,231,106,.25);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+/* Zabrání tomu, aby mobilní prohlížeč sám zvětšoval písmo a rozhodil rozvržení. */
+html{background:#070707;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:var(--text);color:var(--w90);-webkit-font-smoothing:antialiased}
+
+/* ── Deck layout ─────────────────────────────────────────────── */
+.deck{display:flex;flex-direction:column;align-items:center;gap:34px;padding:34px 20px 90px}
+.slide{
+  position:relative;width:100%;max-width:1600px;aspect-ratio:16/9;
+  container-type:size;background:var(--black);overflow:hidden;
+  border:1px solid var(--w06);border-radius:6px;
+  display:flex;flex-direction:column;
+}
+
+/* Mřížka na pozadí — 44px na 1920 = 2.2917cqw */
+.slide::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(to right,rgba(255,255,255,.045) 1px,transparent 1px),
+    linear-gradient(to bottom,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:2.2917cqw 2.2917cqw;
+  -webkit-mask-image:radial-gradient(ellipse 78% 72% at 50% 45%,#000 30%,transparent 100%);
+  mask-image:radial-gradient(ellipse 78% 72% at 50% 45%,#000 30%,transparent 100%);
+}
+
+.pad{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;
+  padding:4.4cqw 5cqw 3cqw}
+.pad>*{position:relative}
+
+/* ── Sdílené atomy ───────────────────────────────────────────── */
+.eyebrow{display:flex;align-items:center;gap:.9cqw;font-size:.76cqw;font-weight:600;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--green)}
+.eyebrow::before{content:"";width:2.6cqw;height:1px;background:var(--green);flex:none}
+
+h1,h2{font-family:var(--display);font-weight:900;text-transform:uppercase;
+  line-height:1.02;letter-spacing:-.02em;color:#fff}
+h1{font-size:6.4cqw}
+h2{font-size:4.3cqw;margin-top:1.5cqw}
+h2.sm{font-size:3.5cqw}
+.accent{color:var(--green)}
+
+.lede{font-size:1.28cqw;line-height:1.5;color:var(--w70);max-width:56cqw;margin-top:1.4cqw}
+
+.badge{display:inline-flex;align-items:center;gap:.55cqw;padding:.42cqw 1cqw;
+  border:1px solid var(--green);border-radius:999px;background:var(--green-12);
+  font-size:.82cqw;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+.dot{width:.55cqw;height:.55cqw;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 0 rgba(0,231,106,.7);animation:pulse 2s infinite}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(0,231,106,.55)}
+  70%{box-shadow:0 0 0 .7cqw rgba(0,231,106,0)}
+  100%{box-shadow:0 0 0 0 rgba(0,231,106,0)}
+}
+
+.foot{position:absolute;left:5cqw;right:5cqw;bottom:2cqw;display:flex;align-items:center;
+  justify-content:space-between;font-size:.72cqw;color:var(--w38);letter-spacing:.06em}
+.foot img{height:1.5cqw;width:auto;opacity:.75}
+.slide-no{position:absolute;right:5cqw;top:4.4cqw;font-family:var(--display);font-weight:800;
+  font-size:1.05cqw;color:var(--w16);letter-spacing:.1em}
+
+.rule{height:1px;background:var(--w10);margin:1.8cqw 0}
+
+/* ── Rámečky zařízení ────────────────────────────────────────── */
+.phone{
+  position:relative;aspect-ratio:390/844;border-radius:2cqw;padding:.28cqw;
+  background:linear-gradient(160deg,#3a3a3a,#151515 40%);
+  box-shadow:var(--glow),0 1.4cqw 3cqw rgba(0,0,0,.6);flex:none;
+}
+.phone>img{width:100%;height:100%;object-fit:cover;object-position:top;
+  border-radius:1.78cqw;display:block;background:var(--ink900)}
+.phone::after{content:"";position:absolute;top:.75cqw;left:50%;transform:translateX(-50%);
+  width:22%;height:.5cqw;border-radius:999px;background:#0b0b0b}
+
+/* Telefon dimenzovaný na výšku — absolutní inset dává definitivní výšku,
+   šířka pak vyplyne z aspect-ratio, takže telefon nikdy nepřeteče slide. */
+.phone-hold{flex:1;min-height:0;position:relative;margin-top:1.2cqw}
+.phone-hold .phone{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);
+  height:100%;width:auto}
+.phone-cap{margin-top:.9cqw;font-size:.9cqw;color:var(--w55);text-align:center}
+
+.browser{
+  border-radius:.85cqw;overflow:hidden;background:var(--ink900);
+  border:1px solid var(--w10);box-shadow:0 1.6cqw 3.4cqw rgba(0,0,0,.65);
+}
+.browser .bar{height:1.75cqw;background:#181818;display:flex;align-items:center;
+  gap:.42cqw;padding:0 .85cqw;border-bottom:1px solid var(--w06)}
+.browser .bar i{width:.52cqw;height:.52cqw;border-radius:50%;background:#3a3a3a;display:block}
+/* height:auto je povinné: obrázky nesou atribut height kvůli rezervaci místa
+   a bez tohohle by se vykreslily v původních 900 px a přetekly slide. */
+.browser img{width:100%;height:auto;display:block}
+
+.tag{position:absolute;padding:.3cqw .7cqw;border-radius:999px;background:rgba(12,12,12,.82);
+  border:1px solid var(--green);color:var(--green);font-size:.62cqw;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;backdrop-filter:blur(6px)}
+
+.sipka{color:var(--green);font-size:2.2cqw;line-height:1;flex:none}
+
+/* ── Slide 1 — titulní ───────────────────────────────────────── */
+.hero-bg{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr);opacity:.30}
+.hero-bg img{width:100%;height:100%;object-fit:cover;filter:blur(14px) saturate(.85)}
+.hero-veil{position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(12,12,12,.55) 0%,rgba(12,12,12,.94) 70%)}
+.title-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;gap:1.5cqw}
+.title-wrap .logo{height:4.4cqw;width:auto}
+.title-wrap h1{font-size:7.4cqw}
+.center-eyebrow{justify-content:center}
+.center-eyebrow::before{display:none}
+
+/* ── Obecné mřížky ───────────────────────────────────────────── */
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:3cqw;margin-top:2.6cqw}
+.body{flex:1;display:flex;gap:3.4cqw;margin-top:2.2cqw;min-height:0}
+
+.stat{text-align:left}
+.stat b{display:block;font-family:var(--display);font-weight:900;font-size:5.4cqw;
+  line-height:.92;color:#fff;letter-spacing:-.02em;white-space:nowrap}
+.stat b.accent{color:var(--green)}
+.stat span{display:block;margin-top:.7cqw;font-size:1.1cqw;color:var(--w55);line-height:1.4}
+
+.step .num{font-family:var(--display);font-weight:900;font-size:2.6cqw;color:var(--green);
+  line-height:1;letter-spacing:-.01em}
+.step h3{font-family:var(--display);font-weight:800;font-size:1.85cqw;text-transform:uppercase;
+  letter-spacing:-.01em;margin:.5cqw 0 .45cqw;color:#fff}
+/* Dva řádky napevno: bez toho začínají telefony pod popisky v různé výšce. */
+.step p{font-size:1.02cqw;color:var(--w55);line-height:1.45;min-height:3cqw}
+
+ul.checks{list-style:none;display:flex;flex-direction:column;gap:1.35cqw;margin-top:.6cqw}
+ul.checks li{display:flex;gap:.95cqw;font-size:1.24cqw;color:var(--w90);line-height:1.35}
+ul.checks li::before{content:"✓";color:var(--green);font-weight:700;flex:none;font-size:1.24cqw}
+ul.checks li small{display:block;font-size:.92cqw;color:var(--w55);margin-top:.18cqw}
+
+.chips{display:flex;gap:.85cqw;flex-wrap:wrap;margin-top:1.6cqw}
+.chip{padding:.62cqw 1.15cqw;border:1px solid var(--w16);border-radius:999px;
+  background:var(--ink900);font-size:.92cqw;color:var(--w70)}
+.chip b{color:#fff;font-weight:600}
+
+/* Číslovaná osa na výšku — LinkedIn slide. */
+.kroky{display:flex;flex-direction:column;gap:1.6cqw;margin-top:2cqw}
+.krok{display:flex;gap:1.2cqw;align-items:flex-start}
+.krok .num{font-family:var(--display);font-weight:900;font-size:2cqw;color:var(--green);
+  line-height:1;flex:none;width:2.6cqw}
+.krok h3{font-family:var(--display);font-weight:800;font-size:1.5cqw;text-transform:uppercase;
+  letter-spacing:-.01em;color:#fff;margin-bottom:.3cqw}
+.krok p{font-size:1cqw;color:var(--w55);line-height:1.45}
+
+.poznamka{font-size:.86cqw;color:var(--w38);line-height:1.5;margin-top:1.6cqw;
+  padding-left:1.1cqw;border-left:2px solid var(--w16)}
+
+/* ── Vějíř administrace ──────────────────────────────────────── */
+.admin-stack{position:relative;flex:1;margin-top:1.8cqw;min-height:0}
+.admin-stack .browser{position:absolute;width:52%}
+.admin-stack .a1{left:0;top:0;z-index:3}
+.admin-stack .a2{left:24%;top:16%;z-index:2}
+.admin-stack .a3{left:48%;top:32%;z-index:1}
+.note-corner{position:absolute;right:5cqw;bottom:4.6cqw;padding:.5cqw 1cqw;border-radius:999px;
+  border:1px dashed var(--w16);color:var(--w38);font-size:.72cqw;letter-spacing:.06em;
+  background:rgba(12,12,12,.7)}
+
+/* ── QR ──────────────────────────────────────────────────────── */
+.qr-block{position:relative;width:17cqw;padding:1.5cqw;border-radius:1.3cqw;background:var(--ink900);
+  border:1px solid var(--w10);flex:none}
+.qr-block img{width:100%;height:auto;display:block;border-radius:.5cqw;background:#fff}
+.qr-block i{position:absolute;width:2cqw;height:2cqw;border:2px solid var(--green);display:block}
+.qr-block i:nth-child(1){top:-1px;left:-1px;border-right:0;border-bottom:0;border-radius:1.3cqw 0 0 0}
+.qr-block i:nth-child(2){top:-1px;right:-1px;border-left:0;border-bottom:0;border-radius:0 1.3cqw 0 0}
+.qr-block i:nth-child(3){bottom:-1px;left:-1px;border-right:0;border-top:0;border-radius:0 0 0 1.3cqw}
+.qr-block i:nth-child(4){bottom:-1px;right:-1px;border-left:0;border-top:0;border-radius:0 0 1.3cqw 0}
+.logos{display:flex;align-items:center;gap:2cqw}
+.logos img{height:2.1cqw;width:auto;opacity:.85}
+
+/* ── Navigace ────────────────────────────────────────────────── */
+.nav{position:fixed;right:16px;bottom:16px;z-index:50;display:flex;gap:6px;align-items:center;
+  background:rgba(20,20,20,.86);border:1px solid var(--w10);border-radius:999px;
+  padding:7px 9px;backdrop-filter:blur(12px);font-size:12px;color:var(--w55)}
+.nav button{width:26px;height:26px;border-radius:50%;border:1px solid var(--w16);
+  background:transparent;color:var(--w90);cursor:pointer;font-size:13px;line-height:1}
+.nav button:hover{border-color:var(--green);color:var(--green)}
+.nav span{min-width:44px;text-align:center;font-variant-numeric:tabular-nums}
+
+/* ── Tisk → PDF, 16:9 ────────────────────────────────────────── */
+@page{size:338mm 190mm;margin:0}
+@media print{
+  html,body{background:#0C0C0C}
+  .deck{gap:0;padding:0}
+  .nav{display:none}
+  .slide{max-width:none;width:100%;height:100vh;border:0;border-radius:0;
+    break-after:page;page-break-after:always;break-inside:avoid}
+  .slide:last-child{break-after:auto;page-break-after:auto}
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  .dot{animation:none}
+}
+/* Pulzující tečka je ozdoba, ne informace — komu pohyb vadí, ať ho nemá. */
+@media (prefers-reduced-motion: reduce){
+  .dot{animation:none}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="deck">
+
+<!-- ═══ 1 — Titulní ═══════════════════════════════════════════ -->
+<section class="slide" id="s1">
+  <div class="hero-bg">
+    <img src="assets/konference.jpg" alt="" width="1920" height="1280">
+    <img src="assets/rockin.jpg" alt="" width="1920" height="1280">
+    <img src="assets/maturitni-ples.jpg" alt="" width="1920" height="1280">
+  </div>
+  <div class="hero-veil"></div>
+  <div class="pad">
+    <div class="title-wrap">
+      <img class="logo" src="assets/foto-zive-inverzni.png" alt="Foto-Živě" width="323" height="145">
+      <div class="eyebrow center-eyebrow">Konference 23.–24. 9. 2026</div>
+      <h1>Fotky z konference.<br><span class="accent">Živě.</span></h1>
+      <span class="badge"><span class="dot"></span>Živě</span>
+    </div>
+    <div class="foot">
+      <span>B&amp;T Project a.s. — návrh nasazení pro pořadatele</span>
+      <span>Snímky z běžící aplikace</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 2 — Vstup do akce ═════════════════════════════════════ -->
+<section class="slide" id="s2">
+  <div class="pad">
+    <div class="slide-no">02</div>
+    <div class="eyebrow">Vstup do akce</div>
+    <h2>Naskenuje QR.<br>A je uvnitř.</h2>
+    <div class="body" style="align-items:center;margin-bottom:2.4cqw">
+      <div style="flex:0 0 auto;display:flex;align-items:center;gap:1.8cqw;align-self:stretch">
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="qr-block" style="width:13cqw">
+            <i></i><i></i><i></i><i></i>
+            <img src="assets/qr-foto-zive.png" alt="QR kód na galerii" loading="lazy" width="720" height="720">
+          </div>
+          <p style="font-size:.8cqw;color:var(--w38);margin-top:.9cqw">QR u prezence</p>
+        </div>
+        <div class="sipka">→</div>
+        <div style="position:relative;display:flex;align-items:center;align-self:stretch">
+          <div class="phone" style="height:88%;width:auto">
+            <img src="snimky/galerie--mobil.webp" alt="Živá galerie konference" loading="lazy" width="390" height="844">
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <ul class="checks">
+          <li><div>Bez instalace — běží v prohlížeči telefonu<small>Nic se nestahuje z obchodu s aplikacemi. iPhone i Android.</small></div></li>
+          <li><div>Bez registrace a bez hesla<small>Prohlížení ani stahování účet nevyžadují.</small></div></li>
+          <li><div>Mezi kódem a fotkami není ani jedna obrazovka<small>Odkaz z QR vyřídí server a rovnou přesměruje do galerie vaší konference.</small></div></li>
+          <li><div>Kdo QR nemá, zadá kód konference<small>Na foto-zive.cz stačí kód z programu nebo ze stolku.</small></div></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot">
+      <img src="assets/foto-zive-inverzni.png" alt="">
+      <span>B&amp;T Project a.s. · září 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 3 — Cesta hosta ═══════════════════════════════════════ -->
+<section class="slide" id="s3">
+  <div class="pad">
+    <div class="slide-no">03</div>
+    <div class="eyebrow">Cesta hosta</div>
+    <h2>Tři kroky. Žádné čekání.</h2>
+    <div class="cols3" style="flex:1;min-height:0;margin-bottom:2.6cqw">
+      <div class="step" style="display:flex;flex-direction:column;min-height:0">
+        <div class="num">01</div>
+        <h3>Naskenuje QR</h3>
+        <p>Kód je u prezence, na stolcích a na plátně mezi bloky. Kdo ho nenaskenuje, zadá na webu kód konference.</p>
+        <div class="phone-hold">
+          <div class="phone"><img src="snimky/najdi-akci--mobil.webp" alt="Vstup do akce" loading="lazy" width="390" height="844"></div>
+        </div>
+      </div>
+      <div class="step" style="display:flex;flex-direction:column;min-height:0">
+        <div class="num">02</div>
+        <h3>Galerie naskakuje živě</h3>
+        <p>Fotograf fotí, fotky přibývají už během programu. Host nemusí nic obnovovat ani hlídat.</p>
+        <div class="phone-hold">
+          <div class="phone"><img src="snimky/galerie--mobil.webp" alt="Živá galerie" loading="lazy" width="390" height="844"></div>
+        </div>
+      </div>
+      <div class="step" style="display:flex;flex-direction:column;min-height:0">
+        <div class="num">03</div>
+        <h3>Fotku má v telefonu</h3>
+        <p>Otevře, stáhne, pošle dál. Bez účtu, bez čekání a kolikrát chce.</p>
+        <div class="phone-hold">
+          <div class="phone"><img src="snimky/detail-fotky--mobil.webp" alt="Detail fotky" loading="lazy" width="390" height="844"></div>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <img src="assets/foto-zive-inverzni.png" alt="">
+      <span>B&amp;T Project a.s. · září 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 4 — Živá galerie ══════════════════════════════════════ -->
+<section class="slide" id="s4">
+  <div class="pad">
+    <div class="slide-no">04</div>
+    <div class="eyebrow">Srdce aplikace</div>
+    <h2>Živá galerie konference</h2>
+    <div class="body" style="align-items:center;margin-bottom:2.4cqw">
+      <div style="flex:0 0 27%;display:flex;align-items:center;justify-content:center;
+        position:relative;min-height:0;align-self:stretch">
+        <div class="phone" style="height:92%;width:auto;transform:rotate(-5deg)">
+          <img src="snimky/galerie--mobil.webp" alt="Živá galerie konference" loading="lazy" width="390" height="844">
+        </div>
+        <div class="tag" style="top:8%;right:8%">Nové</div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <ul class="checks">
+          <li><div>Fotky přibývají samy, bez obnovování<small>Host má galerii otevřenou a nové snímky do ní naskakují.</small></div></li>
+          <li><div>Počítáme i se špatnou sítí v sále<small>Když wi-fi nepustí trvalé spojení, aplikace se sama přepne na dotazování. Host rozdíl nepozná.</small></div></li>
+          <li><div>Galerie patří jen hostům konference<small>Kdo nemá QR ani kód, dovnitř se nedostane. Vyhledávače ji neindexují.</small></div></li>
+          <li><div>Hlavička nese název, termín i místo<small>Galerie působí jako součást vaší akce, ne jako cizí úložiště.</small></div></li>
+        </ul>
+      </div>
+      <div style="flex:0 0 30%;display:flex;align-items:center">
+        <div class="browser" style="width:100%">
+          <div class="bar"><i></i><i></i><i></i></div>
+          <img src="snimky/galerie--desktop.webp" alt="Galerie na velké obrazovce" loading="lazy" width="1440" height="900">
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <img src="assets/foto-zive-inverzni.png" alt="">
+      <span>B&amp;T Project a.s. · září 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 5 — Stažení ═══════════════════════════════════════════ -->
+<section class="slide" id="s5">
+  <div class="pad">
+    <div class="slide-no">05</div>
+    <div class="eyebrow">Stažení</div>
+    <h2>Jedno klepnutí. Bez účtu.</h2>
+    <p class="lede">Pro konferenci navrhujeme režim otevřené akce: hostům se nic neprodává,
+      fotky si stahují zdarma a kolikrát chtějí.</p>
+    <div class="body" style="align-items:center;margin-bottom:2.4cqw">
+      <div style="flex:0 0 26%;min-height:0;align-self:stretch;position:relative;overflow:hidden">
+        <div class="phone" style="position:absolute;top:0;left:50%;transform:translateX(-50%);height:150%;width:auto">
+          <img src="snimky/detail-fotky--mobil.webp" alt="Detail fotky se stažením" loading="lazy" width="390" height="844">
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <ul class="checks">
+          <li><div>Tlačítko „Stáhnout zdarma“ je rovnou u fotky<small>Žádný formulář, žádný e-mail, žádné potvrzování.</small></div></li>
+          <li><div>Na iPhonu druhé klepnutí uloží fotku do Fotek<small>iOS jinak ukládá do Souborů, kde ji hosté hledají marně. Aplikace je nabídkou provede.</small></div></li>
+          <li><div>Bez omezení počtu<small>Host si vezme celou sérii, ne tři snímky.</small></div></li>
+          <li><div>Fotka je bez vodotisku<small>Je to vaše konference, ne naše reklamní plocha.</small></div></li>
+        </ul>
+        <div class="chips">
+          <span class="chip">JPEG <b>2048 px</b></span>
+          <span class="chip">bez registrace</span>
+          <span class="chip">neomezeně</span>
+          <span class="chip">iPhone i Android</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot">
+      <img src="assets/foto-zive-inverzni.png" alt="">
+      <span>B&amp;T Project a.s. · září 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 6 — LinkedIn ══════════════════════════════════════════ -->
+<section class="slide" id="s6">
+  <div class="pad">
+    <div class="slide-no">06</div>
+    <div class="eyebrow">LinkedIn a sítě</div>
+    <h2 class="sm">Z konference na LinkedIn,<br>dokud se o ní ještě mluví</h2>
+    <div class="body" style="align-items:center;margin-bottom:2.4cqw">
+      <div style="flex:1;display:flex;flex-direction:column;justify-content:center">
+        <p class="lede" style="max-width:46cqw;margin-top:.6cqw">Příspěvek z panelu má dosah odpoledne,
+          ne za týden. Aplikace k němu vede nejkratší cestou, která na telefonu opravdu funguje.</p>
+        <div class="kroky">
+          <div class="krok">
+            <div class="num">01</div>
+            <div><h3>Stáhnout zdarma</h3><p>Tlačítko je rovnou pod fotkou. Bez účtu, bez čekání.</p></div>
+          </div>
+          <div class="krok">
+            <div class="num">02</div>
+            <div><h3>Uložit do Fotek</h3><p>Druhé klepnutí a fotka je v knihovně telefonu.</p></div>
+          </div>
+          <div class="krok">
+            <div class="num">03</div>
+            <div><h3>Přiložit k příspěvku</h3><p>Host napíše svůj komentář a fotku přiloží z knihovny — jako každou jinou.</p></div>
+          </div>
+        </div>
+        <div class="chips">
+          <span class="chip">LinkedIn</span>
+          <span class="chip">WhatsApp</span>
+          <span class="chip">Zprávy</span>
+          <span class="chip">Instagram</span>
+        </div>
+      </div>
+      <div style="flex:0 0 40%;display:flex;flex-direction:column;justify-content:center;min-height:0;align-self:stretch">
+        <div style="flex:1;min-height:0;position:relative;overflow:hidden">
+          <div class="phone" style="position:absolute;top:0;left:50%;transform:translateX(-50%);height:175%;width:auto">
+            <img src="snimky/detail-fotky--mobil.webp" alt="Detail fotky se sdílením" loading="lazy" width="390" height="844">
+          </div>
+        </div>
+        <p class="poznamka">Do WhatsAppu, Zpráv a Instagramu odchází fotka jako soubor přímo
+          ze systémové nabídky telefonu. Tlačítko rovnou do LinkedInu záměrně nemáme:
+          ověřovali jsme všechny cesty a LinkedIn na iPhonu obrázky ze systémové nabídky
+          nepřijímá, jeho webové rozhraní zase umí příspěvek jen odeslat okamžitě, bez
+          vlastního textu. Tlačítko, které tiše selže, by hostům udělalo horší službu než
+          dvě klepnutí. Stejnou cestou jdou i světové fotoslužby.</p>
+      </div>
+    </div>
+    <div class="foot">
+      <img src="assets/foto-zive-inverzni.png" alt="">
+      <span>B&amp;T Project a.s. · září 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 7 — Orientace v galerii ═══════════════════════════════ -->
+<section class="slide" id="s7">
+  <div class="pad">
+    <div class="slide-no">07</div>
+    <div class="eyebrow">Orientace v galerii</div>
+    <h2>Host se najde za pár vteřin</h2>
+    <p class="lede">Konference má víc sálů a celý den programu. Fotky se proto řadí od nejnovějších
+      a dají se zúžit na stanoviště, kde host zrovna byl.</p>
+    <div style="flex:1;display:flex;align-items:stretch;justify-content:center;gap:4cqw;min-height:0;margin:1.2cqw 0 2.4cqw">
+      <div style="flex:0 0 20%;display:flex;flex-direction:column;min-height:0">
+        <div class="phone-hold"><div class="phone">
+          <img src="snimky/galerie--mobil.webp" alt="Celá galerie" loading="lazy" width="390" height="844"></div></div>
+        <div class="phone-cap">Vše — celá konference</div>
+      </div>
+      <div style="display:flex;align-items:center"><div class="sipka">→</div></div>
+      <div style="flex:0 0 20%;display:flex;flex-direction:column;min-height:0">
+        <div class="phone-hold"><div class="phone">
+          <img src="snimky/galerie-filtr--mobil.webp" alt="Galerie zúžená na stanoviště Sál" loading="lazy" width="390" height="844"></div></div>
+        <div class="phone-cap">Sál — jen jedno stanoviště</div>
+      </div>
+      <div style="flex:0 0 28%;display:flex;flex-direction:column;justify-content:center">
+        <ul class="checks">
+          <li><div>Stanoviště si pojmenujete sami<small>Sál, foyer, fotostěna, večerní raut — podle vašeho programu.</small></div></li>
+          <li><div>Nejnovější fotky nahoře<small>Kdo přijde z přednášky, má své snímky hned na očích.</small></div></li>
+          <li><div>Počet fotek je vidět v hlavičce<small>Host pozná, že galerie žije, a vrací se do ní.</small></div></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot">
+      <img src="assets/foto-zive-inverzni.png" alt="">
+      <span>B&amp;T Project a.s. · září 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 8 — Administrace ══════════════════════════════════════ -->
+<section class="slide" id="s8">
+  <div class="pad">
+    <div class="slide-no">08</div>
+    <div class="eyebrow">Náš tým na místě</div>
+    <h2>Nahrát, schválit, mít přehled</h2>
+    <div style="display:flex;gap:2.6cqw;flex:1;min-height:0;margin:1.4cqw 0 2.4cqw">
+      <div class="admin-stack" style="flex:1;margin:0">
+        <div class="browser a1"><div class="bar"><i></i><i></i><i></i></div>
+          <img src="snimky/admin-fotky--desktop.webp" alt="Fronta ke schválení" loading="lazy" width="1440" height="900"></div>
+        <div class="browser a2"><div class="bar"><i></i><i></i><i></i></div>
+          <img src="snimky/admin-akce--desktop.webp" alt="Přehled akcí" loading="lazy" width="1440" height="900"></div>
+        <div class="browser a3"><div class="bar"><i></i><i></i><i></i></div>
+          <img src="snimky/admin-statistiky--desktop.webp" alt="Statistiky akce" loading="lazy" width="1440" height="900"></div>
+      </div>
+      <div style="flex:0 0 27%;display:flex;flex-direction:column;justify-content:center">
+        <ul class="checks">
+          <li><div>Fotky nahráváme průběžně během akce<small>Ne večer po skončení. Zpracování běží samo.</small></div></li>
+          <li><div>Do galerie jde jen schválená fotka<small>Nepovedený záběr se k hostům nedostane — frontu drží náš operátor.</small></div></li>
+          <li><div>Akci i QR kód založíme za pár minut<small>Název, termín, místo, kód konference, QR k tisku.</small></div></li>
+          <li><div>Po akci vám dáme přehled<small>Kolik lidí galerii otevřelo a kolik fotek si hosté odnesli.</small></div></li>
+        </ul>
+      </div>
+    </div>
+    <div class="note-corner">Statistiky — návrh rozhraní</div>
+    <div class="foot">
+      <img src="assets/foto-zive-inverzni.png" alt="">
+      <span>B&amp;T Project a.s. · září 2026</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 9 — Závěr ═════════════════════════════════════════════ -->
+<section class="slide" id="s9">
+  <div class="pad">
+    <div class="slide-no">09</div>
+    <div class="eyebrow">Vyzkoušejte si to</div>
+    <div style="flex:1;display:flex;align-items:center;gap:5cqw;min-height:0">
+      <div style="flex:1">
+        <h2 style="margin-top:0">Naskenujte<br>a jste uvnitř</h2>
+        <span class="badge" style="margin-top:1.4cqw"><span class="dot"></span>Živě</span>
+        <p class="lede" style="max-width:38cqw">Zkušební galerie běží ve vašem telefonu — projdete si
+          přesně to, co na konferenci uvidí host: od naskenování QR po uloženou fotku.</p>
+        <div class="rule" style="max-width:38cqw"></div>
+        <p style="font-size:1cqw;color:var(--w55);line-height:1.6;max-width:38cqw">
+          K rozhodnutí:<br>
+          <b style="color:var(--w90)">nasazení na oba dny</b> ·
+          <b style="color:var(--w90)">umístění QR kódů</b> ·
+          <b style="color:var(--w90)">zkouška v sále</b></p>
+      </div>
+      <div style="flex:0 0 auto;text-align:center">
+        <div class="qr-block">
+          <i></i><i></i><i></i><i></i>
+          <img src="assets/qr-foto-zive.png" alt="QR na zkušební galerii" loading="lazy" width="720" height="720">
+        </div>
+        <p style="font-size:.85cqw;color:var(--w38);margin-top:1cqw">foto-zive.cz</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2.4cqw">
+      <div class="logos">
+        <img src="assets/foto-zive-inverzni.png" alt="Foto-Živě" width="323" height="145">
+        <img src="assets/bt-project-inverzni.png" alt="B&amp;T Project" width="323" height="145">
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.72cqw;font-weight:600;letter-spacing:.2em;text-transform:uppercase;
+          color:var(--w38)">Návrh a zpracování</div>
+        <p style="font-family:var(--display);font-weight:800;font-size:1.5cqw;text-transform:uppercase;
+          letter-spacing:.02em;color:var(--w70);margin-top:.35cqw">Ondřej</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<div class="nav">
+  <button id="prev" aria-label="Předchozí slide">‹</button>
+  <span id="counter">1 / 9</span>
+  <button id="next" aria-label="Další slide">›</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var counter = document.getElementById('counter');
+  var current = 0;
+
+  function go(i){
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides[current].scrollIntoView({behavior:'smooth', block:'center'});
+    render();
+  }
+  function render(){ counter.textContent = (current + 1) + ' / ' + slides.length; }
+
+  document.getElementById('prev').addEventListener('click', function(){ go(current - 1); });
+  document.getElementById('next').addEventListener('click', function(){ go(current + 1); });
+
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'ArrowLeft'  || e.key === 'PageUp')   { e.preventDefault(); go(current - 1); }
+    if (e.key === 'Home') { e.preventDefault(); go(0); }
+    if (e.key === 'End')  { e.preventDefault(); go(slides.length - 1); }
+  });
+
+  /*
+   * Sleduj, který slide je zrovna na obrazovce. Pruh uprostřed místo prahu:
+   * na vysokém okně bylo nad prahem víc slidů najednou a počítadlo ukazovalo
+   * ten, který vystřelil naposledy.
+   */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if (en.isIntersecting) { current = slides.indexOf(en.target); render(); }
+      });
+    }, {rootMargin: '-45% 0px -45% 0px'});
+    slides.forEach(function(s){ io.observe(s); });
+  }
+  render();
+})();
+</script>
+</body>
+</html>
